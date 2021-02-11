@@ -1,0 +1,15 @@
+node_modules
+dist
+.tmp
+bower_components
+files
+app/dist
+app/src
+buildOutput
+build-src
+npm-debug.log
+
+ScriptTests/
+Index/
+*.zip
+.backups/
