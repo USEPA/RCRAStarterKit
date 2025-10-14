@@ -1,4 +1,4 @@
-# Project Description.
+# Project Description
 This is an ArcGIS Pro toolbox that helps align RCRA data to the EPA RCRA data model.
 It has 4 tools:
  1 - Update to RCRA Schema - This takes the input data and converts it to the EPA RCRA data model schema. It outputs a new data layer
