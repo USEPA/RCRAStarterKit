@@ -7,6 +7,12 @@ It has 4 tools:
 4 - Generate GeoJSON - Checks that the required fields are populated and creates a GeoJSON file. At the current time this does not include the Event or Evaluation data.  
 This toolbox requires ArcGIS Pro to use.
 
+# Installation
+This tool requires an installation of ArcGIS Pro.
+To add the toolbox, open ArcGIS Pro.  Navigate to the Catalog Pane.  Right click on Toolboxes.  Select Add Toolbox then path to where the toolbox has been saved.
+
+https://mediaspace.esri.com/media/t/1_eyr8s9d8/254054503
+
 # Credits
 U.S. EPA
 
