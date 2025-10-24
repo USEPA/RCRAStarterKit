@@ -973,9 +973,9 @@ class Tool:
         else:
             nullOptionalFields.append('DataCollectionDate')
         if parameters[9].valueasText is not None: 
-            fldsDict['CoordinateDataCode'] = parameters[9].valueAsText
+            fldsDict['coordinateDataCode'] = parameters[9].valueAsText
         else:
-            nullOptionalFields.append('CoordinateDataCode')
+            nullOptionalFields.append('coordinateDataCode')
             
         if parameters[10].valueasText is not None:
             fldsDict['geographicReferencePointCode'] = parameters[10].valueAsText
@@ -983,14 +983,14 @@ class Tool:
             nullOptionalFields.append('geographicReferencePointCode')
 
         if parameters[11].valueasText is not None:
-            fldsDict['GeometricCode'] = parameters[11].valueAsText
+            fldsDict['geometricCode'] = parameters[11].valueAsText
         else:
-            nullOptionalFields.append('GeometricCode')
+            nullOptionalFields.append('geometricCode')
 
         if parameters[12].valueasText is not None:    
-            fldsDict['VerificationMethodCode'] = parameters[12].valueAsText
+            fldsDict['verificationMethodCode'] = parameters[12].valueAsText
         else:
-            nullOptionalFields.append('VerificationMethodCode')
+            nullOptionalFields.append('verificationMethodCode')
 
         if parameters[13].valueasText is not None:    
             fldsDict['FeatureName'] = parameters[13].valueAsText    
@@ -1001,6 +1001,16 @@ class Tool:
             fldsDict['Notes'] = parameters[14].valueAsText
         else:
             nullOptionalFields.append('Notes')
+        
+        if parameters[15].valueasText is not None:
+            fldsDict['unitSequence'] = parameters[15].valueAsText
+        else:
+            nullOptionalFields.append('unitSequence')
+
+        if parameters[14].valueasText is not None:
+            fldsDict['areaSequence'] = parameters[14].valueAsText
+        else:
+            nullOptionalFields.append('areaSequence')
         
         #append the template dataset to the input dataset
         outputDataLayer = appendDataset(parameters, domgdb, messages, fldsDict, nullOptionalFields)
