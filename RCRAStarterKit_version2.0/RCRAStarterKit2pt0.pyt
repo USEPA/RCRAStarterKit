@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import requests
 import pandas as pd
 import arcpy
@@ -13,7 +12,6 @@ GISLOAD = r'https://rcrainfo.epa.gov/rcrainfo-help/application/ApplicationHelp/U
 
 def getrequiredFields(parameters, messages):
         #get a list of required field names and descriptions
-        #url = r"C:\Users\EDamico\Work\RCRAStarterKit\originals\V2\RCRAInfo-GIS-Load-Help.pdf"
         outPath = f"{parameters[1].valueAsText}\\"
         response = requests.get(GISLOAD)
         url = f"{outPath}gisload.htm"
@@ -109,32 +107,13 @@ def getEventData(epaID, badSites, messages):
         caLocation = f'{ns}ActivityLocationCode'
         caAgency = f'{ns}EventAgencyCode'
         caEventCode = f'{ns}CorrectiveActionEventCode'
-        #caSequence = f'{ns}EventSequenceNumber'
+        
 
         caOwner = f'{ns}CorrectiveActionEventDataOwnerCode'
         data = []
         for event in tree.findall(cafs):
             handler = event.find(hid)
-            # #get the event information from CorrectiveActionArea 
-            # for ev in event.find(caArea).findall(caRelEvent):
-            #     eventCode = ev.find(caEventCode)
-            #     eventSequence = ev.find(caSequence)
-            #     eventActivityLocation = ev.find(caLocation)
-            #     eventAgency = ev.find(caAgency)
-            #     eventOwner = ev.find(caOwner)
-            #     eventData = [handler.text, eventActivityLocation.text, eventOwner.text, eventCode.text,
-            #                  eventAgency.text, eventSequence.text]
-            #     data.append(eventData)
-            # #get the event information from CorrectiveActionAuthority
-            # for ev in event.find(caAuthority).findall(caRelEvent):
-            #     eventCode = ev.find(caEventCode)
-            #     eventSequence = ev.find(caSequence)
-            #     eventActivityLocation = ev.find(caLocation)
-            #     eventAgency = ev.find(caAgency)
-            #     eventOwner = ev.find(caOwner)
-            #     eventData = [handler.text, eventActivityLocation.text, eventOwner.text, eventCode.text,
-            #                  eventAgency.text, eventSequence.text]
-            #     data.append(eventData)
+            
             #get event information directly from base event
             for ev in event.findall(caEvent):
                 eventCode = ev.find(caEventCode)
@@ -331,6 +310,24 @@ def appendDataset(parameters, domgdb, messages, fldsDict, nullOptionalFields):
                 row[0] = date_object.strftime('%Y-%m-%d')
                 cursor.updateRow(row)   
         
+    #make sure tierAccuracyCode is two digits
+    fld = 'tierAccuracyCode'
+    with arcpy.da.UpdateCursor(target, [fld], f'{fld} is not null') as cursor:
+        for row in cursor:
+            #get the date format
+            if len(row[0]) ==1:
+                row[0] = f"0{row[0]}"
+            cursor.updateRow(row)
+    
+    fld = 'horizontalCollectionCode'
+    with arcpy.da.UpdateCursor(target, [fld], f'{fld} is not null') as cursor:
+        for row in cursor:
+            #get the date format
+            if len(row[0]) ==1:
+                row[0] = f"00{row[0]}"
+            elif len(row[0]) ==2:
+                row[0] = f"0{row[0]}"
+            cursor.updateRow(row)
 
     #remove extraneous "out" fields if necessary
     outFldList =[f.name for f in arcpy.ListFields(target) if f.name.startswith("out")]
@@ -383,16 +380,7 @@ class Tool_EvaluationData:
             parameterType="Required",
             #category = "Required",
             direction="Input")
-        # param1 = arcpy.Parameter(
-        #     displayName="Handler ID",
-        #     name="HandlerID",
-        #     datatype="Field",
-        #     parameterType="Optional",
-        #     category = "Required Fields",
-        #     direction="Input")
-        # param1.filter.list = ["Text"]
-        # param1.value = ""
-        # param1.parameterDependencies = [param0.name]
+        
         #add derived output parameter
         param1 = arcpy.Parameter(
         displayName="Output Table",
@@ -401,7 +389,7 @@ class Tool_EvaluationData:
         parameterType="Derived",
         direction="Output")
         params = [param0, param1]
-        #params = nogroupParams + requiredparams + optionalparams
+       
         return params
     
     def isLicensed(self):
@@ -449,22 +437,19 @@ class Tool_EvaluationData:
             #get base path of rcraDataLayer
             dataPath = arcpy.Describe(rcraDataLayer).catalogPath
             parent_path = os.path.dirname(dataPath)
-            if parent_path.endswith(".gdb"):
-                #if .gdb is in the path then go to the folder above it
+            if parent_path.endswith(".gdb"):             
                 outPath = parent_path
                 parent_path = os.path.dirname(parent_path)
-                #check to see if the parent path in outPath
-                #if parent_path in outPath:
-                # outPath = os.path.basename(outPath)
+               
             else:
                 outPath = parent_path
 
-
             rcraName = arcpy.Describe(rcraDataLayer).name
             output_csv = f"{parent_path}\\{rcraName}_nodups.csv"
-            # # Save the DataFrame to a CSV file
-        
+
+            #Save the DataFrame to a CSV file
             eval_df.drop_duplicates().to_csv(output_csv, columns= cols, header=True, index=False)
+
             #Save csv to a file geodatabase
             arcpy.management.CopyRows(output_csv, f'{outPath}\\{rcraName}_Evaluation')
             if arcpy.Exists(f'{outPath}\\{rcraName}_Evaluation'):
@@ -484,20 +469,8 @@ class Tool_Event:
             displayName="Select Aligned RCRA data layer",
             name="in_features",
             datatype="GPFeatureLayer",
-            parameterType="Required",
-            #category = "Required",
+            parameterType="Required",           
             direction="Input")
-        # param1 = arcpy.Parameter(
-        #     displayName="Handler ID",
-        #     name="HandlerID",
-        #     datatype="Field",
-        #     parameterType="Optional",
-        #     category = "Required Fields",
-        #     direction="Input")
-        # param1.filter.list = ["Text"]
-        # param1.value = ""
-        # param1.parameterDependencies = [param0.name]
-        #add derived output parameter
         param1 = arcpy.Parameter(
         displayName="Output Table",
         name="out_table",
@@ -505,7 +478,6 @@ class Tool_Event:
         parameterType="Derived",
         direction="Output")
         params = [param0, param1]
-        #params = nogroupParams + requiredparams + optionalparams
         return params
     
     def isLicensed(self):
@@ -516,11 +488,6 @@ class Tool_Event:
         """Modify the values and properties of parameters before internal
         validation is performed.  This method is called whenever a parameter
         has been changed."""
-        # if parameters[0].altered:
-        #     parameters[1].enabled = True
-        #     #parameters[1].value = "Enter Handler ID" 
-        #     parameters[1].setWarningMessage("This field is required")
-
 
         return
 
@@ -598,9 +565,7 @@ class Tool:
             #category = "Required",
             direction="Input")
         
-        #param0.value = "Enter RCRA Layer"
-        #param0.filter.list = ["Polygon"]
-    
+   
     #Get location of output folder where schema corrected dataset will reside
         param1 = arcpy.Parameter(
             displayName="Output Folder",
@@ -773,8 +738,8 @@ class Tool:
 
         #Select the optional name or identifier of the feature
         param13 = arcpy.Parameter(
-            displayName="Feature Name",
-            name="featureName",
+            displayName="name",
+            name="name",
             datatype="Field",
             parameterType="Optional",
             category = "Optional",
@@ -1007,8 +972,8 @@ class Tool:
         else:
             nullOptionalFields.append('unitSequence')
 
-        if parameters[14].valueasText is not None:
-            fldsDict['areaSequence'] = parameters[14].valueAsText
+        if parameters[16].valueasText is not None:
+            fldsDict['areaSequence'] = parameters[16].valueAsText
         else:
             nullOptionalFields.append('areaSequence')
         
@@ -1042,7 +1007,7 @@ class Tool:
         arcpy.management.AssignDomainToField(f"{domgdb}//{outputDataLayer}", "FeatureTypeCode", f"FeatureTypeCode_{shapeType}") 
         messages.addMessage(f"Domain FeatureTypeCode added to FeatureTypeCode field")       
         #get a list of the fields in the output dataset
-        arcpy.SetParameterAsText(15, f"{domgdb}//{outputDataLayer}")
+        arcpy.SetParameterAsText(17, f"{domgdb}//{outputDataLayer}")
 
            
 
@@ -1052,12 +1017,12 @@ class Tool:
             #run the getEventData tool
             tool = Tool_Event()
             tool.execute([f"{domgdb}//{outputDataLayer}"], messages, f"{domgdb}//{outputDataLayer}")
-            arcpy.SetParameterAsText(16, f"{domgdb}\\{outputDataLayer}_Events")
+            arcpy.SetParameterAsText(18, f"{domgdb}\\{outputDataLayer}_Events")
             
             messages.addMessage("Running Get Evaluation Data tool")
             toolEval = Tool_EvaluationData()
             toolEval.execute([f"{domgdb}//{outputDataLayer}"], messages, f"{domgdb}//{outputDataLayer}")
-            arcpy.SetParameterAsText(17, f"{domgdb}\\{outputDataLayer}_Evaluation")
+            arcpy.SetParameterAsText(19, f"{domgdb}\\{outputDataLayer}_Evaluation")
             
 
         else:
@@ -1107,7 +1072,7 @@ class Tool_GenerateGeoJSON:
         param1.filter.list = ["Text"]
         
         params = [param0, param1]
-        #params = nogroupParams + requiredparams + optionalparams
+        
         return params
     
     def isLicensed(self):
@@ -1158,11 +1123,6 @@ class Tool_GenerateGeoJSON:
         for fld in nonRequiredFields:
             nullCheck = [row[0] for row in arcpy.da.SearchCursor(rcraDataLayer, fld, fld + " IS NULL")]
             if len(nullCheck) > 0:
-                #if nulls are found then update that field to a blank string
-                # with arcpy.da.UpdateCursor(rcraDataLayer, fld, fld + " IS NULL") as cursor:
-                #     for row in cursor:
-                #         row[0] = ""
-                #         cursor.updateRow(row)
                 non_requiredNulls.append(fld) 
         msg = """json:
                 [{"element": "content",
@@ -1203,8 +1163,7 @@ class Tool_GenerateGeoJSON:
                 messages.addMessage(msg)
                 missing = 1
                 return
-        # else:
-            # messages.AddMessage("All required fields are present and populated.  Proceeding to create GeoJSON file.")
+       
             
             if non_requiredNulls:
                 messages.AddWarningMessage(f'The following non-required fields contain nulls in the input layer:\n{", ".join(non_requiredNulls)}. \nPlease ensure that the fields do not contain any nulls.')
