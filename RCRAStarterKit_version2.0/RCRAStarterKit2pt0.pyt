@@ -139,7 +139,16 @@ def getEventData(epaID, badSites, messages):
         messages.AddWarningMessage(f'No event data found for Handler ID: {id}.  This Handler ID will not be included in the output table.')
         #print(f'An error occurred while processing Handler ID: {epaID}. Error: {e}')
         return None
-    
+
+def checkfield_typeandconverttoText(dataset, field):
+    """Check the field type and convert to text if necessary"""
+    if arcpy.ListFields(dataset, field)[0].type != 'String':
+        arcpy.management.AddField(dataset, f"{field}_text", "TEXT", field_length=255)
+        arcpy.management.CalculateField(dataset, f"{field}_text", f'!{field}!', "PYTHON3")
+        return f"{field}_text"
+    else:
+        return field
+
 # Function to populate the domain with coded values
 def populatedomain(alist, domName, domgdb):
     for dict in alist:
@@ -253,9 +262,7 @@ def buildTemplatedataset(parameters, domgdb, messages):
                 if param.name in ['gisSequence', 'areaSequence', 'unitSequence']:
                     #if gisSequence, areaSequence, or unitSequence then set field type to Short
                     arcpy.management.AddField(f"{domgdb}\\RCRA_Template_{geometryType}", param.name, "SHORT")
-                # elif param.name == 'dataCollectionDate':
-                #     #if dataCollectionDate then set field type to Date
-                #     arcpy.management.AddField(f"{domgdb}\\RCRA_Template_{geometryType}", param.name, "DATE")
+                
                 else:
                     #all other fields are text
                     arcpy.management.AddField(f"{domgdb}\\RCRA_Template_{geometryType}", param.name, "TEXT")
@@ -628,7 +635,7 @@ class Tool:
 
         param5.value = ""
         param5.parameterDependencies = [param0.name]
-        param5.filter.list = ["Text"]
+        param5.filter.list = ["Text", "Long"]
 
       
     # Select the Horizontal Collection Code parameter
@@ -642,7 +649,7 @@ class Tool:
 
         param6.value = ""
         param6.parameterDependencies = [param0.name]
-        param6.filter.list = ["Text"]
+        param6.filter.list = ["Text", "Long"]
 
         #Note gisSequence is required but will be updated 
         #automatically if it is not included by the user
@@ -926,9 +933,15 @@ class Tool:
         if parameters[4].valueasText is not None:    
             fldsDict['FeatureTypeCode'] = parameters[4].valueAsText
         if parameters[5].valueasText is not None:
-            fldsDict['TierAccuracyCode'] = parameters[5].valueAsText
+            #check to see the field is a text otherwise convert to text
+            matchfield = checkfield_typeandconverttoText(parameters[0].valueAsText, parameters[5].valueAsText)
+            fldsDict['TierAccuracyCode'] = matchfield
+            #fldsDict['TierAccuracyCode'] = parameters[5].valueAsText
         if parameters[6].valueasText is not None:
-            fldsDict['HorizontalCollectionCode'] = parameters[6].valueAsText
+            #check to see the field is a text otherwise convert to text
+            matchfield = checkfield_typeandconverttoText(parameters[0].valueAsText, parameters[6].valueAsText)
+            fldsDict['HorizontalCollectionCode'] = matchfield
+            #fldsDict['HorizontalCollectionCode'] = parameters[6].valueAsText
         if parameters[7].valueasText is not None:
             fldsDict['GISSequence'] = parameters[7].valueAsText
         nullOptionalFields = []
@@ -1178,5 +1191,12 @@ class Tool_GenerateGeoJSON:
             elif null > 0:
                 messages.AddErrorMessage("There are null values found.  Please fix these issues before creating a GeoJSON file.")
 
-                
-
+def checkfield_typeandconverttoText(dataset, field):
+    """Check the field type and convert to text if necessary"""
+    if arcpy.ListFields(dataset, field)[0].type != 'String':
+        arcpy.management.AddField(dataset, f"{field}_text", "TEXT", field_length=255)
+        arcpy.management.CalculateField(dataset, f"{field}_text", f'!{field}!', "PYTHON3")
+        return f"{field}_text"
+    else:
+        return field
+    
