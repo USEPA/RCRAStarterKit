@@ -336,6 +336,14 @@ def appendDataset(parameters, domgdb, messages, fldsDict, nullOptionalFields):
                 row[0] = f"0{row[0]}"
             cursor.updateRow(row)
 
+    fld = 'featureTypeCode'
+    with arcpy.da.UpdateCursor(target, [fld], f'{fld} is not null') as cursor:
+        for row in cursor:
+            #get the date format
+            if len(row[0]) ==1:
+                row[0] = f"0{row[0]}"
+            cursor.updateRow(row)
+
     #remove extraneous "out" fields if necessary
     outFldList =[f.name for f in arcpy.ListFields(target) if f.name.startswith("out")]
     if outFldList:
