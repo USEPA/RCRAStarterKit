@@ -979,9 +979,9 @@ class Tool:
             nullOptionalFields.append('verificationMethodCode')
 
         if parameters[13].valueasText is not None:    
-            fldsDict['FeatureName'] = parameters[13].valueAsText    
+            fldsDict['name'] = parameters[13].valueAsText    
         else:
-            nullOptionalFields.append('FeatureName')
+            nullOptionalFields.append('name')
 
         if parameters[14].valueasText is not None:
             fldsDict['Notes'] = parameters[14].valueAsText
