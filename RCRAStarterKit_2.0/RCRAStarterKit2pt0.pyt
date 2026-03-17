@@ -861,6 +861,7 @@ class Tool:
 
         #check to see if any of the required fields are null
         fieldswithNulls = []
+        fieldswithNulls_Optional = []
         notEntered = []
         for param in parameters[2:8]:
             if param.valueasText is not None:
@@ -879,7 +880,7 @@ class Tool:
                 notEntered.append(param.displayName)
         
         #check non-required fields for nulls
-        for param in parameters[8:16]:
+        for param in parameters[8:17]:
             if param.valueasText is not None:
                 fld = [param.valueAsText][0]
                 messages.addMessage("Checking for null values in optional field: " + fld)
@@ -890,14 +891,34 @@ class Tool:
                 #clear the selection
                 arcpy.management.SelectLayerByAttribute(parameters[0].valueAsText, 
                                                             "CLEAR_SELECTION")
+                fldsList = [(f.name, f.type) for f in arcpy.ListFields(parameters[0].valueAsText)]
+                #convert fldsList to dictionary
+                fldDict = dict(fldsList)
                 if nullCount > 0:
-                        fieldswithNulls.append(fld)
+                        fieldswithNulls_Optional.append(fld)
+                        numeric_types = ['SmallInteger', 'Integer', 'Single', 'Double', 'BigInteger']
+                        #Update the nulls as "None" otherwise the json conversion will fail.
+                        if fldDict[fld]=="String":
+                            defaultNull = "None"
+                        # if fldDict[fld] in numeric_types :
+                        #     defaultNull = -999
+                        # defaultTimeNull = '0000-00-00'
+                        #Note '0000-00-00' doesn't work as a place holder
+                        # if fldDict[fld] == "Date":
+                        #     defaultNull = datetime.datetime.strptime(defaultTimeNull, "%Y-%m-%d")
+                        with arcpy.da.UpdateCursor(parameters[0].valueAsText, fld, fld + " IS NULL") as cursor:
+                            for row in cursor:
+                                row[0] = defaultNull
+                                cursor.updateRow(row)
        
         
         if fieldswithNulls:
             #for f in fieldswithNulls:
-            messages.addWarningMessage("There are null values in the field(s): " + ", ".join(fieldswithNulls) + ". Nulls need to be updated before json can be created.")
+            messages.addWarningMessage("There are null values in the required field(s): " + ", ".join(fieldswithNulls) + ". Nulls need to be updated before json can be created.")
         
+        if fieldswithNulls_Optional:
+            messages.addWarningMessage("There are null values in the optional field(s): " + ", ".join(fieldswithNulls_Optional) + ". Nulls have been updated to a default null value to be compliant.")
+
         for val in notEntered:
             #if the field is not selected then add a warning message    
             messages.AddWarningMessage( f"No field was selected for required field {val}.  This field will be set up but it will need to be populated before json can be created.")
@@ -1140,11 +1161,11 @@ class Tool_GenerateGeoJSON:
                     # return
         #check if any non required fields are null
         non_requiredNulls = []
-        nonRequiredFields = [f.name.upper() for f in arcpy.ListFields(rcraDataLayer) if f.name.upper() not in requiredFields]
-        for fld in nonRequiredFields:
-            nullCheck = [row[0] for row in arcpy.da.SearchCursor(rcraDataLayer, fld, fld + " IS NULL")]
-            if len(nullCheck) > 0:
-                non_requiredNulls.append(fld) 
+        # nonRequiredFields = [f.name.upper() for f in arcpy.ListFields(rcraDataLayer) if f.name.upper() not in requiredFields]
+        # for fld in nonRequiredFields:
+        #     nullCheck = [row[0] for row in arcpy.da.SearchCursor(rcraDataLayer, fld, fld + " IS NULL")]
+        #     if len(nullCheck) > 0:
+        #         non_requiredNulls.append(fld) 
         msg = """json:
                 [{"element": "content",
                 "data": ["Check out this link for more help and information about updating these fields: ", 
