@@ -483,7 +483,7 @@ class Tool_Event:
         param0 = arcpy.Parameter(
             displayName="Select Aligned RCRA data layer",
             name="in_features",
-            datatype="GPFeatureLayer",
+            datatype=["GPFeatureLayer","DETable","DEFile"],
             parameterType="Required",           
             direction="Input")
         param1 = arcpy.Parameter(
@@ -541,7 +541,13 @@ class Tool_Event:
         #get base path of rcraDataLayer
         dataPath = arcpy.Describe(rcraDataLayer).catalogPath
         parent_path = os.path.dirname(dataPath)
-        if parent_path.endswith(".gdb"):
+        
+        if ".gdb" in parent_path and not parent_path.endswith(".gdb"):
+            splitPath = parent_path.split(".gdb")[0] +".gdb"
+            outPath = splitPath
+            parent_path = os.path.dirname(splitPath)
+            
+        elif parent_path.endswith((".gdb", ".csv", ".xlsx")):
             #if .gdb is in the path then go to the folder above it
             outPath = parent_path
             parent_path = os.path.dirname(parent_path)
@@ -551,14 +557,18 @@ class Tool_Event:
 
 
         rcraName = arcpy.Describe(rcraDataLayer).name
-        output_csv = f"{parent_path}\\{rcraName}_nodups.csv"
+        output_csv = f"{parent_path}\\{rcraName}_Events.csv"
         # # Save the DataFrame to a CSV file
         eval_df.drop_duplicates().to_csv(output_csv, columns= cols, header=True, index=False)
+        #if input was located in a gdb save the table out to the gdb otherwise leave it in the parent director
+        if outPath.endswith(".gdb"):
         #Save csv to a file geodatabase
-        arcpy.management.CopyRows(output_csv, f'{outPath}\\{rcraName}_Events')
-        if arcpy.Exists(f'{outPath}\\{rcraName}_Events'):
-            messages.addMessage(f"Event data successfully saved to {outPath}\\{rcraName}_Events")
-            arcpy.Delete_management(output_csv)
+            arcpy.management.CopyRows(output_csv, f'{outPath}\\{rcraName}_Events')
+            if arcpy.Exists(f'{outPath}\\{rcraName}_Events'):
+                messages.addMessage(f"Event data successfully saved to {outPath}\\{rcraName}_Events")
+                arcpy.Delete_management(output_csv)
+        else:
+            messages.addMessage(f"Event data successfully saved to{parent_path}\\{rcraName}_Events.csv")
         arcpy.SetParameterAsText(1, f"{outPath}\\{rcraName}_Events")
 
 class Tool:
