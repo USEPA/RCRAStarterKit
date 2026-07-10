@@ -6,25 +6,41 @@ import os
 from datetime import datetime
 import xml.etree.cElementTree as ET
 from dateutil.parser import parse
+from pathlib import Path
+
+#import html5lib 
+SCRIPT_DIR = Path(__file__).parent
+csvPath = Path(SCRIPT_DIR, 'csv')
 
 HTMBASEPATH = 'https://rcrainfo.epa.gov/rcrainfo-help/application/NationallyDefinedValues/GISModule/NDV-'
 GISLOAD = r'https://rcrainfo.epa.gov/rcrainfo-help/application/ApplicationHelp/Utilities/UG-UtilitiesGISLoad.htm'
-
-def getrequiredFields(parameters, messages):
+def getrequiredFields(csvPath):
         #get a list of required field names and descriptions
-        outPath = f"{parameters[1].valueAsText}\\"
-        response = requests.get(GISLOAD)
-        url = f"{outPath}gisload.htm"
-        with open(url, "w") as file:
-                file.write(response.text)
-        dfs = pd.read_html(url)
-        df = dfs[0]
-        #reset column names to first row then drop first row
-        df.columns = df.iloc[0]
-        df = df.drop(df.index[0])
+        #get gis load.csv from the csvList folder
+        load_csv = f"{csvPath}/gisload.csv"
+        
+        
+        df = pd.read_csv(load_csv)
+       # df = dfs[0]
         df_required = df[df['Required'] == 'Yes']
         requiredList = df_required['Field'].tolist()
         return requiredList
+
+# def getrequiredFields(parameters, messages):
+#         #get a list of required field names and descriptions
+#         outPath = f"{parameters[1].valueAsText}\\"
+#         response = requests.get(GISLOAD)
+#         url = f"{outPath}gisload.htm"
+#         with open(url, "w") as file:
+#                 file.write(response.text)
+#         dfs = pd.read_html(url)
+#         df = dfs[0]
+#         #reset column names to first row then drop first row
+#         df.columns = df.iloc[0]
+#         df = df.drop(df.index[0])
+#         df_required = df[df['Required'] == 'Yes']
+#         requiredList = df_required['Field'].tolist()
+#         return requiredList
         
 
 def getEvalutationData(epaID, badSites, messages):
@@ -158,6 +174,7 @@ def populatedomain(alist, domName, domgdb):
             dict["None"] = "Null value"    
         arcpy.management.AddCodedValueToDomain(domgdb, domName, dict['Code'], dict['Description'])
 
+
 def createDomain(df, html,schemaFieldDict, hasValues_df, domgdb, messages):
     #convert dataframe to dictionary
     listofRecords = df.to_dict('records')
@@ -202,18 +219,10 @@ def splitFeaturebyType(df, html,hasValues_df,domgdb, schemaFieldDict,messages):
             #populate domains
             populatedomain(listofRecords, domName, domgdb)
 
-def getSchemaFieldDict(parameters, domgdb, messages):
-        #get a list of required field names and descriptions
-        outPath = f"{parameters[1].valueAsText}\\"
-        response = requests.get(GISLOAD)
-        url = f"{outPath}gisload.htm"
-        with open(url, "w") as file:
-                file.write(response.text)
-        dfs = pd.read_html(url)
-        df = dfs[0]
-        #reset column names to first row then drop first row
-        df.columns = df.iloc[0]
-        df = df.drop(df.index[0])
+def getSchemaFieldDict(csvPath, domgdb, messages):
+        
+        load_csv = Path(f"{csvPath}/gisload.csv")
+        df = pd.read_csv(load_csv)
         #subselect only the fields that have nationally-defined values
         hasValues_df = df[df["Description"].str.contains('nationally-defined')]
         #get a list of field names that correlate to schemas
@@ -222,24 +231,56 @@ def getSchemaFieldDict(parameters, domgdb, messages):
         listofSchemas = ['FeatureType', 'GISCoordinate', 'GISTierAccuracy','GISGeometric',
                         'GISGeographicReference','GISHorizontalCollection','GISVerification']
         schemaFieldDict = dict(zip(listofSchemas, fldList))
-        for html in listofSchemas:
-        #get the htm on web
-            feat_url = f"{HTMBASEPATH}{html}.htm"
-            response = requests.get(feat_url)
-            #write htm to local space
-            url = f"{outPath}{html}.htm"
-            with open(url, "w") as file:
-                file.write(response.text)
+        for csv in listofSchemas:
             # convert to pandas data frame
-            dfs = pd.read_html(url)
-            df = dfs[0]
-            #reset column names to first row then drop first row
-            df.columns = df.iloc[0]
-            df = df.drop(df.index[0])
-            if html == 'FeatureType':
-                splitFeaturebyType(df, html,hasValues_df,domgdb, schemaFieldDict,messages)
+            df = pd.read_csv(Path(csvPath, f"{csv}.csv"))
+            
+            if csv == 'FeatureType':
+                
+                splitFeaturebyType(df, csv,hasValues_df,domgdb, schemaFieldDict,messages)
             else:
-                createDomain(df, html,schemaFieldDict, hasValues_df, domgdb,messages)
+                
+                createDomain(df, csv,schemaFieldDict, hasValues_df, domgdb,messages)
+
+# def getSchemaFieldDict(parameters, domgdb, messages):
+#         #get a list of required field names and descriptions
+#         outPath = f"{parameters[1].valueAsText}\\"
+#         response = requests.get(GISLOAD)
+#         url = f"{outPath}gisload.htm"
+#         with open(url, "w") as file:
+#                 file.write(response.text)
+#         dfs = pd.read_html(url)
+#         df = dfs[0]
+#         #reset column names to first row then drop first row
+#         df.columns = df.iloc[0]
+#         df = df.drop(df.index[0])
+#         #subselect only the fields that have nationally-defined values
+#         hasValues_df = df[df["Description"].str.contains('nationally-defined')]
+#         #get a list of field names that correlate to schemas
+#         fldList = list(hasValues_df['Field'])
+
+#         listofSchemas = ['FeatureType', 'GISCoordinate', 'GISTierAccuracy','GISGeometric',
+#                         'GISGeographicReference','GISHorizontalCollection','GISVerification']
+#         schemaFieldDict = dict(zip(listofSchemas, fldList))
+#         for html in listofSchemas:
+#         #get the htm on web
+#             feat_url = f"{HTMBASEPATH}{html}.htm"
+#             response = requests.get(feat_url)
+#             #write htm to local space
+#             url = f"{outPath}{html}.htm"
+#             with open(url, "w") as file:
+#                 file.write(response.text)
+#             # convert to pandas data frame
+#             dfs = pd.read_html(url)
+#             #dfs = pd.read_html(url, flavor="lxml")
+#             df = dfs[0]
+#             #reset column names to first row then drop first row
+#             df.columns = df.iloc[0]
+#             df = df.drop(df.index[0])
+#             if html == 'FeatureType':
+#                 splitFeaturebyType(df, html,hasValues_df,domgdb, schemaFieldDict,messages)
+#             else:
+#                 createDomain(df, html,schemaFieldDict, hasValues_df, domgdb,messages)
 
 def buildTemplatedataset(parameters, domgdb, messages):
     #create a template dataset with the required fields and domains
@@ -391,7 +432,7 @@ class Tool_EvaluationData:
         param0 = arcpy.Parameter(
             displayName="Select Aligned RCRA data layer",
             name="in_features",
-            datatype="GPFeatureLayer",
+            datatype=["GPFeatureLayer","DETable","DEFile"],
             parameterType="Required",
             #category = "Required",
             direction="Input")
@@ -403,7 +444,20 @@ class Tool_EvaluationData:
         datatype="Table",
         parameterType="Derived",
         direction="Output")
-        params = [param0, param1]
+
+         # Select Handler ID parameter
+        param2 = arcpy.Parameter(
+            displayName="Handler ID",
+            name="handlerId",
+            datatype="Field",
+            parameterType="Optional",
+            category = "Required Fields",
+            direction="Input")
+        param2.filter.list = ["Text"]
+        param2.value = ""
+        param2.parameterDependencies = [param0.name]
+        
+        params = [param0, param1, param2]        
        
         return params
     
@@ -431,7 +485,14 @@ class Tool_EvaluationData:
                 rcraDataLayer = parameters[0].valueAsText
             
             #get a list of handler IDs
-            handlerIDs = [row[0].strip() for row in arcpy.da.SearchCursor(rcraDataLayer, ['handlerId'], "handlerId IS NOT NULL")]
+            try:        
+                handlerIDFld = parameters[2].valueAsText
+            except: 
+                handlerIDFld = "handlerId"
+            #handlerIDFld = parameters[2].valueAsText
+            selQuery = handlerIDFld + " IS NOT NULL"
+            handlerIDs = [row[0].strip() for row in arcpy.da.SearchCursor(rcraDataLayer, [handlerIDFld], selQuery)]
+
             badSites = []
             # Create a DataFrame to store the results
             cols = ['handlerId', 'EvaluationActivityLocation', 'EvaluationIdentifier', 'EvaluationStartDate', 'EvaluationResponsibleAgency']
@@ -452,24 +513,39 @@ class Tool_EvaluationData:
             #get base path of rcraDataLayer
             dataPath = arcpy.Describe(rcraDataLayer).catalogPath
             parent_path = os.path.dirname(dataPath)
-            if parent_path.endswith(".gdb"):             
+            if ".gdb" in parent_path and not parent_path.endswith(".gdb"):
+                splitPath = parent_path.split(".gdb")[0] +".gdb"
+                outPath = splitPath
+                parent_path = os.path.dirname(splitPath)
+            elif parent_path.endswith((".gdb", ".csv", ".xlsx")):
                 outPath = parent_path
                 parent_path = os.path.dirname(parent_path)
-               
+
             else:
                 outPath = parent_path
 
             rcraName = arcpy.Describe(rcraDataLayer).name
-            output_csv = f"{parent_path}\\{rcraName}_nodups.csv"
+            output_csv = f"{parent_path}\\{rcraName}_Evaluation.csv"
 
             #Save the DataFrame to a CSV file
             eval_df.drop_duplicates().to_csv(output_csv, columns= cols, header=True, index=False)
 
+            # #Save csv to a file geodatabase
+            # arcpy.management.CopyRows(output_csv, f'{outPath}\\{rcraName}_Evaluation')
+            # if arcpy.Exists(f'{outPath}\\{rcraName}_Evaluation'):
+            #     messages.addMessage(f"Evaluation data successfully saved to {outPath}\\{rcraName}_Evaluation")
+            #     arcpy.Delete_management(output_csv)
+            # arcpy.SetParameterAsText(1, f"{outPath}\\{rcraName}_Evaluation")
+
+
+            if outPath.endswith(".gdb"):
             #Save csv to a file geodatabase
-            arcpy.management.CopyRows(output_csv, f'{outPath}\\{rcraName}_Evaluation')
-            if arcpy.Exists(f'{outPath}\\{rcraName}_Evaluation'):
-                messages.addMessage(f"Evaluation data successfully saved to {outPath}\\{rcraName}_Evaluation")
-                arcpy.Delete_management(output_csv)
+                arcpy.management.CopyRows(output_csv, f'{outPath}\\{rcraName}_Evaluation')
+                if arcpy.Exists(f'{outPath}\\{rcraName}_Evaluation'):
+                    messages.addMessage(f"Event data successfully saved to {outPath}\\{rcraName}_Evaluation")
+                    arcpy.Delete_management(output_csv)
+            else:
+                messages.addMessage(f"Event data successfully saved to{parent_path}\\{rcraName}_Evaluation.csv")
             arcpy.SetParameterAsText(1, f"{outPath}\\{rcraName}_Evaluation")
 class Tool_Event:
     def __init__(self):
@@ -486,13 +562,27 @@ class Tool_Event:
             datatype=["GPFeatureLayer","DETable","DEFile"],
             parameterType="Required",           
             direction="Input")
+       
         param1 = arcpy.Parameter(
         displayName="Output Table",
         name="out_table",
         datatype="Table",
         parameterType="Derived",
         direction="Output")
-        params = [param0, param1]
+       
+       # Select Handler ID parameter
+        param2 = arcpy.Parameter(
+            displayName="Handler ID",
+            name="handlerId",
+            datatype="Field",
+            parameterType="Optional",
+            category = "Required Fields",
+            direction="Input")
+        param2.filter.list = ["Text"]
+        param2.value = ""
+        param2.parameterDependencies = [param0.name]
+        
+        params = [param0, param1, param2]
         return params
     
     def isLicensed(self):
@@ -519,7 +609,12 @@ class Tool_Event:
             rcraDataLayer = parameters[0].valueAsText
            
         #get a list of handler IDs
-        handlerIDs = [row[0].strip() for row in arcpy.da.SearchCursor(rcraDataLayer, ['handlerId'], "handlerId IS NOT NULL")]
+        try:        
+            handlerIDFld = parameters[2].valueAsText
+        except: 
+            handlerIDFld = "handlerId"
+        selQuery = handlerIDFld + " IS NOT NULL"
+        handlerIDs = [row[0].strip() for row in arcpy.da.SearchCursor(rcraDataLayer, [handlerIDFld], selQuery)]
         badSites = []
         # Create a DataFrame to store the results
         cols = ['handlerId', 'eventActivityLocation', 'eventOwner', 'eventCode', 'eventAgency', 'eventSequence']
@@ -906,7 +1001,7 @@ class Tool:
                 fldDict = dict(fldsList)
                 if nullCount > 0:
                         fieldswithNulls_Optional.append(fld)
-                        numeric_types = ['SmallInteger', 'Integer', 'Single', 'Double', 'BigInteger']
+                        #numeric_types = ['SmallInteger', 'Integer', 'Single', 'Double', 'BigInteger']
                         #Update the nulls as "None" otherwise the json conversion will fail.
                         if fldDict[fld]=="String":
                             defaultNull = "None"
@@ -942,8 +1037,24 @@ class Tool:
                             "link": "https://rcrainfo.epa.gov/rcrainfo-help/application/index.htm#t=ApplicationHelp%2FUtilities%2FUG-UtilitiesGISLoad.htm"}]}]"""
             messages.addMessage(msg)
         
+        #check to see if EventCode is in the input dataset and then check if there are no nulls
+        # if 'eventCode' in [f.name for f in arcpy.ListFields(parameters[0].valueAsText)]:
+        #     messages.addMessage("Checking for null values in eventCode field")
+        #     nullList = arcpy.management.SelectLayerByAttribute(parameters[0].valueAsText, 
+        #                                                 "NEW_SELECTION", "eventCode IS NULL")
+        #     nullCount = int(arcpy.management.GetCount(nullList).getOutput(0))
+            
+        #     #clear the selection
+        #     arcpy.management.SelectLayerByAttribute(parameters[0].valueAsText, 
+        #                                                 "CLEAR_SELECTION")
+        #     if nullCount > 0:
+        #             messages.addWarningMessage("There are null values in the eventCode field.  If eventcode field will not be included.")  
+        #     else:
+        #         messages.addMessage("No null values found in eventCode field.  Event code field will be included in the output.")
+        #         parameters.append('eventCode')
+
         messages.addMessage("Setting up domains")
-        schemaFieldDict = {}
+        #schemaFieldDict = {}
         gdbfolder = parameters[1].valueAsText
         gdbPath = gdbfolder
         #outPath = os.path.join(gdbPath, 'htm')
@@ -956,7 +1067,7 @@ class Tool:
             messages.addMessage(f"New GDB created: {domgdb}") 
         else:
             messages.addMessage(f"GDB already exists, data will be added to: {domgdb}")
-        getSchemaFieldDict(parameters, domgdb,messages)
+        getSchemaFieldDict(csvPath, domgdb,messages)
         
         messages.addMessage("Domains are complete.  Building template dataset")
         
@@ -1151,7 +1262,7 @@ class Tool_GenerateGeoJSON:
             rcraDataLayer = parameters[0].valueAsText
             
             #get a list of the required fields
-        requiredFields = [f.upper() for f in getrequiredFields(parameters, messages)]
+        requiredFields = [f.upper() for f in getrequiredFields(csvPath)]
         #Check that all of the required fields are populated
         rcraDataFields = [f.name.upper() for f in arcpy.ListFields(rcraDataLayer)]
         missingFields = []

@@ -1,0 +1,15 @@
+Code,Description
+001,Proximate to the centroid of the county
+002,Proximate to the alternative coordinates for the facility
+003,Proximate to the centroid of another polygon
+004,A point within an undefined polygon
+005,A point within the county
+006,A point within the zip code area
+007,Verified relative to map features (1:24K)
+008,Verified relative to map features (1:100K or TIGER)
+009,Verified relative to other map features
+010,Verified by an unknown method
+011,Determined by ground truth
+012,Proximate to the centroid of the zip code
+013,Verified as a point in the zip code bounding box
+014,Verified as a point in the county bounding box

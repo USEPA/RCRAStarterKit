@@ -1,0 +1,6 @@
+Code,Description
+001,The point referenced by geographic coordinates
+002,The line referenced by geographic coordinates
+003,The area referenced by geographic coordinates
+004,"The geometric entity, described by locational coordinates, that includes two or more related areas is a region"
+005,"The geometric entity, described by locational coordinates, that forms a contiguous network is a route"

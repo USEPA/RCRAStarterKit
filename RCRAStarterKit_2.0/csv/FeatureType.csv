@@ -1,0 +1,26 @@
+Code,Description,Geometry Type
+01,Engineering Control - Cap Area,Polygon
+02,Engineering Control - Fencing,Polyline
+03,Engineering Control - Monitoring Well,Points
+04,Engineering Control - Permeable Reactive Barrier,Polygon
+05,Engineering Control - Retaining Wall,Polyline
+06,Institutional Control - Informational,Polygon
+07,Institutional Control - Enforcement/Permitting,Polygon
+08,Institutional Control - Governmental,Polygon
+09,Institutional Control - Proprietary,Polygon
+10,Photo,Points
+11,Site Access,Points
+12,Site Boundary,Polygon
+13,Storage Area,Points
+14,Treatment - Asbestos,Polygon
+15,Treatment - Coal Combustion Residuals,Polygon
+16,Treatment - Discharge/Outfall,Points
+17,Treatment - Extraction Well,Points
+18,Treatment - Injection Well,Points
+19,Treatment - Landfill,Polygon
+20,Treatment - Lead,Polygon
+21,Treatment - Plume (Groundwater),Polygon
+22,Treatment - Plume (Vapor Intrusion),Polygon
+23,Treatment - Sample Locations,Points
+24,Treatment - Solid Waste Management Unit,Polyline
+25,Treatment - Surface Impoundment,Polygon

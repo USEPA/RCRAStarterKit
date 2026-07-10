@@ -1,0 +1,51 @@
+Code,Description
+001,"Points not represented by general codes 101-107, 109, or their specific codes - unknown"
+002,"The entrance point of a facility, system, or station defined as the plant entrance (general)"
+003,"Points not represented by general codes 101-107, 109, or their specific codes - other"
+004,"The entrance point of a facility, system, or station defined as the plant entrance (personnel)"
+005,"The entrance point of a facility, system, or station defined as the plant entrance (freight)"
+006,The point where substance is released into the environment defined as an air release stack
+007,The point where substance is release into the environment defined as an air release vent
+008,"The point where substance is processed, treated, or stored defined as a storage tank"
+009,The point where substance is released into the environment defined as a water release pipe
+010,"The point where substance is processed, treated, or stored defined as a lagoon or settling pond"
+011,"The point where substance is processed, treated, or stored defined as a liquid waste treatment unit"
+012,The point where substance is released into the environment defined as an atmospheric emission
+013,The point where substance is released into the environment defined as a solid waste treatment and disposal
+014,The point where substance is released into the environment defined as a solid waste storage area
+015,"The entrance point of a facility, system, or station defined as the loading facility"
+016,The center of a facility/system defined as the loading area centroid
+017,"The point where substance is processed, treated, or stored defined as a process unit"
+018,"The point where substance is processed, treated, or stored defined as a process unit centroid"
+019,"The entrance point of a facility, system, or station defined as the administrative building"
+020,The center of a facility/system defined as the geographic centroid of the facility
+021,The boundary point for a facility or system defined as the NE corner of parcel
+022,The boundary point for a facility or system defined as the NW corner of parcel
+023,The boundary point for a facility or system defined as the SE corner of parcel
+024,The boundary point for a facility or system defined as the SW corner of parcel
+025,The center of a facility/system defined as the center of production facility
+028,The point where substance is monitored or sampled defined as water monitoring station
+029,The point where substance is monitored or sampled defined as an air monitoring station
+030,The point where water or other substance could be drawn from environment for delivery to a facility or distribution system defined as an intake pipe
+032,The point where water or other substance could be drawn from environment for delivery to a facility or distribution system defined as a water well
+033,The point where water or other substance could be drawn from environment for delivery to a facility or distribution system defined as a spring
+035,The point where substance is released into the environment defined as a potential contaminant source
+037,The point where water or other substance could be drawn from environment for delivery to a facility or distribution system defined as a well head
+038,The point where substance is released into the environment defined as an end of pipe
+039,The point where substance is monitored or sampled defined as grid origin
+040,The point where substance is monitored or sampled defined as point of record
+041,The point where substance is monitored or sampled defined as sampling point
+042,The point where substance is monitored or sampled defined as transect origin
+043,The point where water or other substance could be drawn from environment for delivery to a facility or distribution system defined an oil well
+044,The point where water or other substance could be drawn from environment for delivery to a facility or distribution system defined as a sulfur well
+045,The point where water or other substance could be drawn from environment for delivery to a facility or distribution system defined as a gas well
+046,The point where substance is released into the environment defined as an underground injection well
+101,"Entrance point of a facility, system, or station"
+102,Center of a facility/system
+103,"Boundary point for a facility or system (facility boundary points can be singular, or part of a series of boundary points)"
+104,Point where water or other substance could be drawn from environment for delivery to facility or distribution system (substance destination could range from a single residence to a large facility)
+105,"Point where substance is processed, treated, stored (point from which substance could be released into the environment)"
+106,Point where substance is released (point where substance is directly released into the environment)
+107,Point where substance is monitored or sampled
+108,"Points not represent by general codes 101-107, 109, or their specific codes"
+109,The point where one discharge point goes directly into an intake point

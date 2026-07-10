@@ -1,0 +1,26 @@
+Field,Description,Required
+handlerId,Unique EPA RCRA identification number assigned by the implementing State or Region to each RCRA site.,Yes
+gisOwner,"Indicates the location (particular State, Territory, or EPA Region) of the agency that owns the GIS data.",Yes
+gisSequence,System-generated value used to uniquely identify the feature.,Yes
+dataCollectionDate,The date the data was collected in yyyy-mm-dd format.,No
+name,Optional name or identifier of the feature; may be used to store Regional Supplemental Control ID from Cleanup Site Geospatial Data Schema.,No
+featureTypeCode,Code that categorizes the feature of a site the geometry represents [see nationally-defined values].,Yes
+coordinateDataCode,Code that represents the party responsible for collecting or otherwise providing geographic coordinates [see nationally-defined values].,No
+tierAccuracyCode,Code that represents the measure of accuracy (in a range of meters) of the feature's coordinates [see nationally-defined values].,Yes
+geometricCode,Code that represents the geometric entity described by the coordinates [see nationally-defined values].,No
+geographicReferencePointCode,Code that represents the place for which geographic coordinates were established [see nationally-defined values].,No
+horizontalCollectionCode,Code that represents the method used to determine the coordinates of the feature [see nationally-defined values].,Yes
+horizontalReferenceCode,Code that represents the reference datum used in determining the latitude and longitude coordinates for the site location. Note: This value must be '003' (World Geodetic System of 1984) and your geospatial data must use the WGS 84 coordinate reference frame for accurate representation in RCRAInfo and associated products.,Yes
+verificationMethodCode,Code that represents the method used to verify the coordinates [see nationally-defined values].,No
+eventActivityLocation,Indicates the location of the agency regulating the Corrective Action activity.,No1
+eventOwner,Indicates the agency that defined the Corrective Action event.,No1
+eventCode,Code that corresponds to a specific Corrective Action event or event type. The first two characters indicate the event category and the last three characters the numeric event number.,No1
+eventSequence,System-generated value used to uniquely identify multiple occurences of a Corrective Action event.,No1
+eventAgency,Code indicating the agency responsible for overseeing a specific Corrective Action event.,No1
+evaluationAgency,Code indicating the agency responsible for conducting the evaluation (inspection).,No2
+evaluationAgencyLocation,The location (i.e. State) where the activity took place.,No2
+evaluationIdentifier,Name or number assigned by the implementing agency to identify an evaluation (inspection).,No2
+evaluationStartDate,"The first day of the evaluation, inspection, or record review regardless of the duration of the activity.",No2
+areaSequence,System-generated value used to uniquely identify a Corrective Action area.,No3
+unitSeq,System-generated value used to uniquely identify a process unit.,No4
+notes,Optional comments with additional descriptive information about the feature (publicly releasable).,No

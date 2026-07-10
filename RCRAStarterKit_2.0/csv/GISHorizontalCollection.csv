@@ -1,0 +1,42 @@
+Code,Description
+001,The geographic coordinate determination method based on address matching-house number
+002,The geographic coordinate determination method based on address matching-block face
+003,The geographic coordinate determination method based on address matching - street centerline
+004,The geographic coordinate determination method based on address matching-nearest intersection
+005,The geographic coordinate determination method based on address matching-primary name
+006,The geographic coordinate determination method based on address matching-digitized
+007,The geographic coordinate determination method based on address matching-other
+008,The geographic coordinate determination method based on census block-1990-centroid
+009,The geographic coordinate determination method based on census group-1990-centroid
+010,The geographic coordinate determination method based on census tract-1990-centroid
+011,The geographic coordinate determination method based on census-other
+012,The geographic coordinate determination method based on GPS carrier phase static relative positioning technique
+013,The geographic coordinate determination method based on GPS carrier phase kinematic relative positioning technique
+014,The geographic coordinate determination method based on GPS code measurements (pseudo range) differential (DGPS)
+015,The geographic coordinate determination method based on GPS code measurements (pseudo range) precise positioning service
+016,The geographic coordinate determination method based on GPS code measurements (pseudo range) standard positioning service (SA Off)
+017,The geographic coordinate determination method based on GPS code measurements (pseudo range) standard positioning service (SA On)
+018,The geographic coordinate determination method based on interpolation-map
+019,The geographic coordinate determination method based on interpolation-photo
+020,The geographic coordinate determination method based on interpolation-satellite
+021,The geographic coordinate determination method based on interpolation-other
+022,The geographic coordinate determination method based on Loran C
+023,The geographic coordinate determination method based on public land survey
+024,The geographic coordinate determination method based on public land survey section
+025,The geographic coordinate determination method based on classical surveying techniques
+026,The geographic coordinate determination method based on zip code-centroid
+027,The information is not known
+028,"Global positioning method, with unspecified parameters"
+029,GPS code measurements (pseudo range) standard positioning service corrected using Canadian active control system
+030,The geographic coordinate determination method based on a digital map source (TIGER)
+031,"The geographic coordinate determination method uses SPOT, a French-owned satellite launched in 1984"
+032,The geographic coordinate determination method based on the use of a Multi-Spectral Scanner (MSS)
+033,The geographic coordinate determination method based on the use of a Thematic Mapper (TM)
+034,"The geographic coordinate determination method based on a public land survey, an eighth of a section"
+035,"The geographic coordinate determination method based on a public land survey, a sixteenth of a section"
+036,The geographic coordinate determination method based on a public land survey footing
+037,The center of an area defined by the 5-digit zip code and its 4-digit geographic segment extension
+038,The center of an area defined by the 5-digit zip code and its 2-digit geographic segment extension
+102,US Bureau of Census Block established for year noted
+103,The geographic coordinate determination method based on GPS
+108,The geographic coordinate determination method based on zip code
