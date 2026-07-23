@@ -910,29 +910,42 @@ class Tool:
         param16.filter.list = ["Double", "Long", "Short"]
         param16.value = ""
 
-        #add derived output parameter
+        # Select the optional EventCode parameter 
         param17 = arcpy.Parameter(
+            displayName="Event Code",
+            name="eventCode",
+            datatype="Field",
+            parameterType="Optional",
+            category = "Optional",
+            direction="Input")
+        param17.value = ""
+        param17.parameterDependencies = [param0.name]
+        param17.filter.list = ["Text"]
+        param17.value = ""
+
+        #add derived output parameter
+        param18 = arcpy.Parameter(
         displayName="Output Features",
         name="out_features",
         datatype="GPFeatureLayer",
         parameterType="Derived",
         direction="Output")
 
-        param18 = arcpy.Parameter(
+        param19 = arcpy.Parameter(
         displayName="Output Event Table",
         name="out_eventtable",
         datatype="Table",
         parameterType="Derived",
         direction="Output")
 
-        param19 = arcpy.Parameter(
+        param20 = arcpy.Parameter(
         displayName="Output Evaluation Table",
         name="out_evaltable",
         datatype="Table",
         parameterType="Derived",
         direction="Output")
 
-        optionalparams = [param8, param9, param10, param11, param12, param13, param14, param15, param16, param17, param18, param19]
+        optionalparams = [param8, param9, param10, param11, param12, param13, param14, param15, param16, param17, param18, param19, param20]
         params = nogroupParams + requiredparams + optionalparams
         return params
         
@@ -985,7 +998,7 @@ class Tool:
                 notEntered.append(param.displayName)
         
         #check non-required fields for nulls
-        for param in parameters[8:17]:
+        for param in parameters[8:18]:
             if param.valueasText is not None:
                 fld = [param.valueAsText][0]
                 messages.addMessage("Checking for null values in optional field: " + fld)
@@ -1026,7 +1039,7 @@ class Tool:
 
         for val in notEntered:
             #if the field is not selected then add a warning message    
-            messages.AddWarningMessage( f"No field was selected for required field {val}.  This field will be set up but it will need to be populated before json can be created.")
+            messages.addWarningMessage( f"No field was selected for required field {val}.  This field will be set up but it will need to be populated before json can be created.")
                 #return
         if notEntered:
             msg = """json:
@@ -1139,6 +1152,11 @@ class Tool:
             fldsDict['areaSequence'] = parameters[16].valueAsText
         else:
             nullOptionalFields.append('areaSequence')
+        
+        if parameters[17].valueasText is not None:
+            fldsDict['eventCode'] = parameters[17].valueAsText
+        else:
+            nullOptionalFields.append('eventCode')
         
         #append the template dataset to the input dataset
         outputDataLayer = appendDataset(parameters, domgdb, messages, fldsDict, nullOptionalFields)
