@@ -26,22 +26,7 @@ def getrequiredFields(csvPath):
         requiredList = df_required['Field'].tolist()
         return requiredList
 
-# def getrequiredFields(parameters, messages):
-#         #get a list of required field names and descriptions
-#         outPath = f"{parameters[1].valueAsText}\\"
-#         response = requests.get(GISLOAD)
-#         url = f"{outPath}gisload.htm"
-#         with open(url, "w") as file:
-#                 file.write(response.text)
-#         dfs = pd.read_html(url)
-#         df = dfs[0]
-#         #reset column names to first row then drop first row
-#         df.columns = df.iloc[0]
-#         df = df.drop(df.index[0])
-#         df_required = df[df['Required'] == 'Yes']
-#         requiredList = df_required['Field'].tolist()
-#         return requiredList
-        
+
 
 def getEvalutationData(epaID, badSites, messages):
     """
@@ -90,7 +75,7 @@ def getEvalutationData(epaID, badSites, messages):
 
     except Exception as e:
         badSites.append(epaID)
-        messages.AddWarningMessage(f'No evaluation data found for Handler ID: {id}.  This Handler ID will not be included in the output table.')
+        messages.addWarningMessage(f'No evaluation data found for Handler ID: {epaID}.  This Handler ID will not be included in the output table.')
         #print(f'An error occurred while processing Handler ID: {epaID}. Error: {e}')
         return None
 
@@ -152,7 +137,7 @@ def getEventData(epaID, badSites, messages):
 
     except Exception as e:
         badSites.append(epaID)
-        messages.AddWarningMessage(f'No event data found for Handler ID: {id}.  This Handler ID will not be included in the output table.')
+        messages.addWarningMessage(f'No event data found for Handler ID: {epaID}.  This Handler ID will not be included in the output table.')
         #print(f'An error occurred while processing Handler ID: {epaID}. Error: {e}')
         return None
 
@@ -242,45 +227,6 @@ def getSchemaFieldDict(csvPath, domgdb, messages):
                 
                 createDomain(df, csv,schemaFieldDict, hasValues_df, domgdb,messages)
 
-# def getSchemaFieldDict(parameters, domgdb, messages):
-#         #get a list of required field names and descriptions
-#         outPath = f"{parameters[1].valueAsText}\\"
-#         response = requests.get(GISLOAD)
-#         url = f"{outPath}gisload.htm"
-#         with open(url, "w") as file:
-#                 file.write(response.text)
-#         dfs = pd.read_html(url)
-#         df = dfs[0]
-#         #reset column names to first row then drop first row
-#         df.columns = df.iloc[0]
-#         df = df.drop(df.index[0])
-#         #subselect only the fields that have nationally-defined values
-#         hasValues_df = df[df["Description"].str.contains('nationally-defined')]
-#         #get a list of field names that correlate to schemas
-#         fldList = list(hasValues_df['Field'])
-
-#         listofSchemas = ['FeatureType', 'GISCoordinate', 'GISTierAccuracy','GISGeometric',
-#                         'GISGeographicReference','GISHorizontalCollection','GISVerification']
-#         schemaFieldDict = dict(zip(listofSchemas, fldList))
-#         for html in listofSchemas:
-#         #get the htm on web
-#             feat_url = f"{HTMBASEPATH}{html}.htm"
-#             response = requests.get(feat_url)
-#             #write htm to local space
-#             url = f"{outPath}{html}.htm"
-#             with open(url, "w") as file:
-#                 file.write(response.text)
-#             # convert to pandas data frame
-#             dfs = pd.read_html(url)
-#             #dfs = pd.read_html(url, flavor="lxml")
-#             df = dfs[0]
-#             #reset column names to first row then drop first row
-#             df.columns = df.iloc[0]
-#             df = df.drop(df.index[0])
-#             if html == 'FeatureType':
-#                 splitFeaturebyType(df, html,hasValues_df,domgdb, schemaFieldDict,messages)
-#             else:
-#                 createDomain(df, html,schemaFieldDict, hasValues_df, domgdb,messages)
 
 def buildTemplatedataset(parameters, domgdb, messages):
     #create a template dataset with the required fields and domains
@@ -303,7 +249,14 @@ def buildTemplatedataset(parameters, domgdb, messages):
                 if param.name in ['gisSequence', 'areaSequence', 'unitSequence']:
                     #if gisSequence, areaSequence, or unitSequence then set field type to Short
                     arcpy.management.AddField(f"{domgdb}\\RCRA_Template_{geometryType}", param.name, "SHORT")
-                
+                elif param.name in ['eventCode'] and parameters[17].valueAsText is not None:
+                    messages.addMessage("Adding eventCode field and related fields to the template dataset")                    
+                    #also add eventSequence, eventActivityLocation, eventAgency, and eventOwner fields if eventCode is selected
+                    arcpy.management.AddField(f"{domgdb}\\RCRA_Template_{geometryType}", "eventSequence", "SHORT")
+                    arcpy.management.AddField(f"{domgdb}\\RCRA_Template_{geometryType}", "eventActivityLocation", "TEXT")
+                    arcpy.management.AddField(f"{domgdb}\\RCRA_Template_{geometryType}", "eventAgency", "TEXT")
+                    arcpy.management.AddField(f"{domgdb}\\RCRA_Template_{geometryType}", "eventOwner", "TEXT")
+                    arcpy.management.AddField(f"{domgdb}\\RCRA_Template_{geometryType}", 'eventCode', "TEXT")
                 else:
                     #all other fields are text
                     arcpy.management.AddField(f"{domgdb}\\RCRA_Template_{geometryType}", param.name, "TEXT")
@@ -329,7 +282,11 @@ def appendDataset(parameters, domgdb, messages, fldsDict, nullOptionalFields):
 
     for fld in fldsDict:
         fldMap = arcpy.FieldMap()
-        fldMap.addInputField(input,fldsDict[fld])
+        try:
+            fldMap.addInputField(input,fldsDict[fld])
+        except:
+            messages.addWarningMessage(f"Field {fldsDict[fld]} not found in input dataset.  This field will be left blank in the output dataset.")
+            
         # Set name of new output field based on the dictionary key
         hid = fldMap.outputField
         hid.name, hid.aliasName, hid.type = fld, fld, "TEXT"
@@ -1012,11 +969,12 @@ class Tool:
                 fldsList = [(f.name, f.type) for f in arcpy.ListFields(parameters[0].valueAsText)]
                 #convert fldsList to dictionary
                 fldDict = dict(fldsList)
-                if nullCount > 0:
-                        fieldswithNulls_Optional.append(fld)
+                #removeFlds = []
+                if nullCount > 0:                        
                         #numeric_types = ['SmallInteger', 'Integer', 'Single', 'Double', 'BigInteger']
                         #Update the nulls as "None" otherwise the json conversion will fail.
                         if fldDict[fld]=="String":
+                            fieldswithNulls_Optional.append(fld)
                             defaultNull = "None"
                         # if fldDict[fld] in numeric_types :
                         #     defaultNull = -999
@@ -1024,18 +982,24 @@ class Tool:
                         #Note '0000-00-00' doesn't work as a place holder
                         # if fldDict[fld] == "Date":
                         #     defaultNull = datetime.datetime.strptime(defaultTimeNull, "%Y-%m-%d")
-                        with arcpy.da.UpdateCursor(parameters[0].valueAsText, fld, fld + " IS NULL") as cursor:
-                            for row in cursor:
-                                row[0] = defaultNull
-                                cursor.updateRow(row)
-       
+                            with arcpy.da.UpdateCursor(parameters[0].valueAsText, fld, fld + " IS NULL") as cursor:
+                                for row in cursor:
+                                    row[0] = defaultNull
+                                    cursor.updateRow(row)
+                        else:
+                            messages.addWarningMessage(f"Optional field {fld} has Nulls. Nulls are not allowed in this field. This field will be dropped from the output dataset.")
+                            #removeFlds.append(fld)
+                            #remove the field from the output dataset
+                            #arcpy.management.DeleteField(parameters[0].valueAsText, fld) 
+                            #set param value to None so it is not included in the output dataset
+                            param.value = None     
         
         if fieldswithNulls:
             #for f in fieldswithNulls:
             messages.addWarningMessage("There are null values in the required field(s): " + ", ".join(fieldswithNulls) + ". Nulls need to be updated before json can be created.")
         
         if fieldswithNulls_Optional:
-            messages.addWarningMessage("There are null values in the optional field(s): " + ", ".join(fieldswithNulls_Optional) + ". Nulls have been updated to a default null value to be compliant.")
+            messages.addWarningMessage("There are null values in the optional field(s) : " + ", ".join(fieldswithNulls_Optional) + ". Nulls have been updated to a default null value to be compliant.")
 
         for val in notEntered:
             #if the field is not selected then add a warning message    
@@ -1050,21 +1014,6 @@ class Tool:
                             "link": "https://rcrainfo.epa.gov/rcrainfo-help/application/index.htm#t=ApplicationHelp%2FUtilities%2FUG-UtilitiesGISLoad.htm"}]}]"""
             messages.addMessage(msg)
         
-        #check to see if EventCode is in the input dataset and then check if there are no nulls
-        # if 'eventCode' in [f.name for f in arcpy.ListFields(parameters[0].valueAsText)]:
-        #     messages.addMessage("Checking for null values in eventCode field")
-        #     nullList = arcpy.management.SelectLayerByAttribute(parameters[0].valueAsText, 
-        #                                                 "NEW_SELECTION", "eventCode IS NULL")
-        #     nullCount = int(arcpy.management.GetCount(nullList).getOutput(0))
-            
-        #     #clear the selection
-        #     arcpy.management.SelectLayerByAttribute(parameters[0].valueAsText, 
-        #                                                 "CLEAR_SELECTION")
-        #     if nullCount > 0:
-        #             messages.addWarningMessage("There are null values in the eventCode field.  If eventcode field will not be included.")  
-        #     else:
-        #         messages.addMessage("No null values found in eventCode field.  Event code field will be included in the output.")
-        #         parameters.append('eventCode')
 
         messages.addMessage("Setting up domains")
         #schemaFieldDict = {}
@@ -1155,8 +1104,15 @@ class Tool:
         
         if parameters[17].valueasText is not None:
             fldsDict['eventCode'] = parameters[17].valueAsText
+            #if eventcode is entered than also add eventSequence, eventActivityLocation, eventAgency, and eventOwner.
+            fldsDict['eventSequence'] = "eventSequence"
+            fldsDict['eventActivityLocation'] = "eventActivityLocation"
+            fldsDict['eventAgency'] = "eventAgency"
+            fldsDict['eventOwner'] = "eventOwner"
         else:
             nullOptionalFields.append('eventCode')
+            
+
         
         #append the template dataset to the input dataset
         outputDataLayer = appendDataset(parameters, domgdb, messages, fldsDict, nullOptionalFields)
@@ -1188,7 +1144,7 @@ class Tool:
         arcpy.management.AssignDomainToField(f"{domgdb}//{outputDataLayer}", "FeatureTypeCode", f"FeatureTypeCode_{shapeType}") 
         messages.addMessage(f"Domain FeatureTypeCode added to FeatureTypeCode field")       
         #get a list of the fields in the output dataset
-        arcpy.SetParameterAsText(17, f"{domgdb}//{outputDataLayer}")
+        arcpy.SetParameterAsText(18, f"{domgdb}//{outputDataLayer}")
 
            
 
@@ -1198,12 +1154,12 @@ class Tool:
             #run the getEventData tool
             tool = Tool_Event()
             tool.execute([f"{domgdb}//{outputDataLayer}"], messages, f"{domgdb}//{outputDataLayer}")
-            arcpy.SetParameterAsText(18, f"{domgdb}\\{outputDataLayer}_Events")
+            arcpy.SetParameterAsText(19, f"{domgdb}\\{outputDataLayer}_Events")
             
             messages.addMessage("Running Get Evaluation Data tool")
             toolEval = Tool_EvaluationData()
             toolEval.execute([f"{domgdb}//{outputDataLayer}"], messages, f"{domgdb}//{outputDataLayer}")
-            arcpy.SetParameterAsText(19, f"{domgdb}\\{outputDataLayer}_Evaluation")
+            arcpy.SetParameterAsText(20, f"{domgdb}\\{outputDataLayer}_Evaluation")
             
 
         else:
