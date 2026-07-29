@@ -246,17 +246,17 @@ def buildTemplatedataset(parameters, domgdb, messages):
     for param in parameters[1:-1]:
         if param.name != 'outputdataset':
             if param.enabled == True:
-                if param.name in ['gisSequence', 'areaSequence', 'unitSequence']:
+                if param.name in ['gisSequence', 'areaSequence', 'unitSequence', 'eventSequence']:
                     #if gisSequence, areaSequence, or unitSequence then set field type to Short
                     arcpy.management.AddField(f"{domgdb}\\RCRA_Template_{geometryType}", param.name, "SHORT")
-                elif param.name in ['eventCode'] and parameters[17].valueAsText is not None:
-                    messages.addMessage("Adding eventCode field and related fields to the template dataset")                    
-                    #also add eventSequence, eventActivityLocation, eventAgency, and eventOwner fields if eventCode is selected
-                    arcpy.management.AddField(f"{domgdb}\\RCRA_Template_{geometryType}", "eventSequence", "SHORT")
-                    arcpy.management.AddField(f"{domgdb}\\RCRA_Template_{geometryType}", "eventActivityLocation", "TEXT")
-                    arcpy.management.AddField(f"{domgdb}\\RCRA_Template_{geometryType}", "eventAgency", "TEXT")
-                    arcpy.management.AddField(f"{domgdb}\\RCRA_Template_{geometryType}", "eventOwner", "TEXT")
-                    arcpy.management.AddField(f"{domgdb}\\RCRA_Template_{geometryType}", 'eventCode', "TEXT")
+                # elif param.name in ['eventCode'] and parameters[17].valueAsText is not None:
+                #     messages.addMessage("Adding eventCode field and related fields to the template dataset")                    
+                #     #also add eventSequence, eventActivityLocation, eventAgency, and eventOwner fields if eventCode is selected
+                #     arcpy.management.AddField(f"{domgdb}\\RCRA_Template_{geometryType}", "eventSequence", "SHORT")
+                #     arcpy.management.AddField(f"{domgdb}\\RCRA_Template_{geometryType}", "eventActivityLocation", "TEXT")
+                #     arcpy.management.AddField(f"{domgdb}\\RCRA_Template_{geometryType}", "eventAgency", "TEXT")
+                #     arcpy.management.AddField(f"{domgdb}\\RCRA_Template_{geometryType}", "eventOwner", "TEXT")
+                #     arcpy.management.AddField(f"{domgdb}\\RCRA_Template_{geometryType}", 'eventCode', "TEXT")
                 else:
                     #all other fields are text
                     arcpy.management.AddField(f"{domgdb}\\RCRA_Template_{geometryType}", param.name, "TEXT")
@@ -880,29 +880,82 @@ class Tool:
         param17.filter.list = ["Text"]
         param17.value = ""
 
-        #add derived output parameter
+        #if the user select event code then activate the event sequence, event activity location, event agency, and event owner parameters to user can input those fields
         param18 = arcpy.Parameter(
+                    displayName="Event Sequence",
+                    name="eventSequence",
+                    datatype="Field",
+                    parameterType="Required",
+                    category = "Optional",
+                    direction="Input")
+        param18.value = ""
+        param18.parameterDependencies = [param0.name,param17.name]
+        param18.filter.list = ["Text", "Double", "Long", "Short"]
+        param18.value = ""
+        param18.enabled = False
+
+        param19 = arcpy.Parameter(
+                    displayName="Event Activity Location",
+                    name="eventActivityLocation",
+                    datatype="Field",
+                    parameterType="Required",
+                    category = "Optional",
+                    direction="Input")
+        param19.value = ""
+        param19.parameterDependencies = [param0.name,param17.name]
+        param19.filter.list = ["Text"]
+        param19.value = ""
+        param19.enabled = False
+
+        param20 = arcpy.Parameter(
+                    displayName="Event Agency",
+                    name="eventAgency",
+                    datatype="Field",
+                    parameterType="Required",
+                    category = "Optional",
+                    direction="Input")
+        param20.value = ""
+        param20.parameterDependencies = [param0.name,param17.name]
+        param20.filter.list = ["Text"]
+        param20.value = ""
+        param20.enabled = False
+
+        param21 = arcpy.Parameter(
+                    displayName="Event Owner",
+                    name="eventOwner",
+                    datatype="Field",
+                    parameterType="Required",
+                    category = "Optional",
+                    direction="Input")
+        param21.value = ""
+        param21.parameterDependencies = [param0.name,param17.name]
+        param21.filter.list = ["Text"]
+        param21.value = ""
+        param21.enabled = False
+
+        #add derived output parameter
+        param22 = arcpy.Parameter(
         displayName="Output Features",
         name="out_features",
         datatype="GPFeatureLayer",
         parameterType="Derived",
         direction="Output")
 
-        param19 = arcpy.Parameter(
+        param23 = arcpy.Parameter(
         displayName="Output Event Table",
         name="out_eventtable",
         datatype="Table",
         parameterType="Derived",
         direction="Output")
 
-        param20 = arcpy.Parameter(
+        param24 = arcpy.Parameter(
         displayName="Output Evaluation Table",
         name="out_evaltable",
         datatype="Table",
         parameterType="Derived",
         direction="Output")
 
-        optionalparams = [param8, param9, param10, param11, param12, param13, param14, param15, param16, param17, param18, param19, param20]
+        optionalparams = [param8, param9, param10, param11, param12, param13, param14, param15, param16, param17, param18, param19, param20, param21, param22, param23, param24]
         params = nogroupParams + requiredparams + optionalparams
         return params
         
@@ -918,6 +971,20 @@ class Tool:
             parameters[1].enabled = True
             #parameters[1].value = "Enter Handler ID" 
             parameters[1].setWarningMessage("This field is required")
+
+        if parameters[17].altered:
+            parameters[18].enabled = True
+            parameters[19].enabled = True
+            parameters[20].enabled = True
+            parameters[21].enabled = True
+            
+        else:
+            parameters[18].enabled = False
+            parameters[19].enabled = False
+            parameters[20].enabled = False
+            parameters[21].enabled = False
+            
+
 
 
         return
@@ -1104,13 +1171,28 @@ class Tool:
         
         if parameters[17].valueasText is not None:
             fldsDict['eventCode'] = parameters[17].valueAsText
-            #if eventcode is entered than also add eventSequence, eventActivityLocation, eventAgency, and eventOwner.
-            fldsDict['eventSequence'] = "eventSequence"
-            fldsDict['eventActivityLocation'] = "eventActivityLocation"
-            fldsDict['eventAgency'] = "eventAgency"
-            fldsDict['eventOwner'] = "eventOwner"
         else:
             nullOptionalFields.append('eventCode')
+            #if eventcode is entered than also add eventSequence, eventActivityLocation, eventAgency, and eventOwner.
+        if parameters[18].valueasText is not None:
+            fldsDict['eventSequence'] = parameters[18].valueasText
+        else:
+            nullOptionalFields.append('eventSequence')
+
+        if parameters[19].valueasText is not None:
+            fldsDict['eventActivityLocation'] = parameters[19].valueasText
+        else:
+            nullOptionalFields.append('eventActivityLocation')
+
+        if parameters[20].valueasText is not None:
+            fldsDict['eventAgency'] = parameters[20].valueasText
+        else:
+            nullOptionalFields.append('eventAgency')
+
+        if parameters[21].valueasText is not None:
+            fldsDict['eventOwner'] = parameters[21].valueasText
+        else:
+            nullOptionalFields.append('eventOwner')
             
 
         
@@ -1144,7 +1226,7 @@ class Tool:
         arcpy.management.AssignDomainToField(f"{domgdb}//{outputDataLayer}", "FeatureTypeCode", f"FeatureTypeCode_{shapeType}") 
         messages.addMessage(f"Domain FeatureTypeCode added to FeatureTypeCode field")       
         #get a list of the fields in the output dataset
-        arcpy.SetParameterAsText(18, f"{domgdb}//{outputDataLayer}")
+        arcpy.SetParameterAsText(22, f"{domgdb}//{outputDataLayer}")
 
            
 
@@ -1154,12 +1236,12 @@ class Tool:
             #run the getEventData tool
             tool = Tool_Event()
             tool.execute([f"{domgdb}//{outputDataLayer}"], messages, f"{domgdb}//{outputDataLayer}")
-            arcpy.SetParameterAsText(19, f"{domgdb}\\{outputDataLayer}_Events")
+            arcpy.SetParameterAsText(23, f"{domgdb}\\{outputDataLayer}_Events")
             
             messages.addMessage("Running Get Evaluation Data tool")
             toolEval = Tool_EvaluationData()
             toolEval.execute([f"{domgdb}//{outputDataLayer}"], messages, f"{domgdb}//{outputDataLayer}")
-            arcpy.SetParameterAsText(20, f"{domgdb}\\{outputDataLayer}_Evaluation")
+            arcpy.SetParameterAsText(24, f"{domgdb}\\{outputDataLayer}_Evaluation")
             
 
         else:
