@@ -660,7 +660,7 @@ class Tool:
             displayName="Handler ID",
             name="handlerId",
             datatype="Field",
-            parameterType="Optional",
+            parameterType="Required",
             category = "Required Fields",
             direction="Input")
         param2.filter.list = ["Text"]
@@ -673,7 +673,7 @@ class Tool:
             displayName="GIS Owner",
             name="gisOwner",
             datatype="Field",
-            parameterType="Optional",
+            parameterType="Required",
             category = "Required Fields",
             direction="Input")
 
@@ -686,7 +686,7 @@ class Tool:
             displayName="Feature Type Code",
             name="featureTypeCode",
             datatype="Field",
-            parameterType="Optional",
+            parameterType="Required",
             category = "Required Fields",
             direction="Input")
 
@@ -699,7 +699,7 @@ class Tool:
             displayName="Tier Accuracy Code",
             name="tierAccuracyCode",
             datatype="Field",
-            parameterType="Optional",
+            parameterType="Required",
             category = "Required Fields",
             direction="Input")
 
@@ -713,7 +713,7 @@ class Tool:
             displayName="Horizontal Collection Code",
             name="horizontalCollectionCode",
             datatype="Field",
-            parameterType="Optional",
+            parameterType="Required",
             category = "Required Fields",
             direction="Input")
 
@@ -727,7 +727,7 @@ class Tool:
             displayName="GIS Sequence",
             name="gisSequence",
             datatype="Field",
-            parameterType="Optional",
+            parameterType="Required",
             category = "Required Fields",
             direction="Input")
 
@@ -885,7 +885,7 @@ class Tool:
                     displayName="Event Sequence",
                     name="eventSequence",
                     datatype="Field",
-                    parameterType="Required",
+                    parameterType="Optional",
                     category = "Optional",
                     direction="Input")
         param18.value = ""
@@ -898,7 +898,7 @@ class Tool:
                     displayName="Event Activity Location",
                     name="eventActivityLocation",
                     datatype="Field",
-                    parameterType="Required",
+                    parameterType="Optional",
                     category = "Optional",
                     direction="Input")
         param19.value = ""
@@ -911,7 +911,7 @@ class Tool:
                     displayName="Event Agency",
                     name="eventAgency",
                     datatype="Field",
-                    parameterType="Required",
+                    parameterType="Optional",
                     category = "Optional",
                     direction="Input")
         param20.value = ""
@@ -924,7 +924,7 @@ class Tool:
                     displayName="Event Owner",
                     name="eventOwner",
                     datatype="Field",
-                    parameterType="Required",
+                    parameterType="Optional",
                     category = "Optional",
                     direction="Input")
         param21.value = ""
@@ -977,6 +977,7 @@ class Tool:
             parameters[19].enabled = True
             parameters[20].enabled = True
             parameters[21].enabled = True
+
             
         else:
             parameters[18].enabled = False
@@ -992,6 +993,11 @@ class Tool:
     def updateMessages(self, parameters):
         """Modify the messages created by internal validation for each tool
         parameter. This method is called after internal validation."""
+        if parameters[17].altered:
+            parameters[18].setWarningMessage(f"{parameters[18].name} is required when EventCode is selected")
+            parameters[19].setWarningMessage(f"{parameters[19].name} is required when EventCode is selected")
+            parameters[20].setWarningMessage(f"{parameters[20].name} is required when EventCode is selected")
+            parameters[21].setWarningMessage(f"{parameters[21].name} is required when EventCode is selected")
         return
     
 
