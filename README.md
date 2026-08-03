@@ -19,6 +19,10 @@ Note:  If your study area contains EventCodes, separate your data into two files
 This tool requires an installation of ArcGIS Pro.
 To add the toolbox, open ArcGIS Pro.  Navigate to the Catalog Pane.  Right click on Toolboxes.  Select Add Toolbox then path to where the toolbox has been saved.
 
+
+
+Note: Make sure the csv folder is saved to the same folder as the tool.
+
 https://mediaspace.esri.com/media/t/1\_eyr8s9d8/254054503
 
 # Credits
