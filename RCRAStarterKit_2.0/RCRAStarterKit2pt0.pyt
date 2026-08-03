@@ -994,10 +994,10 @@ class Tool:
         """Modify the messages created by internal validation for each tool
         parameter. This method is called after internal validation."""
         if parameters[17].altered:
-            parameters[18].setWarningMessage(f"{parameters[18].name} is required when EventCode is selected")
-            parameters[19].setWarningMessage(f"{parameters[19].name} is required when EventCode is selected")
-            parameters[20].setWarningMessage(f"{parameters[20].name} is required when EventCode is selected")
-            parameters[21].setWarningMessage(f"{parameters[21].name} is required when EventCode is selected")
+            parameters[18].setWarningMessage(f"THIS IS A REQUIRED FIELD it is NOT Optional.\n{parameters[18].name} is REQUIRED when EventCode is selected")
+            parameters[19].setWarningMessage(f"THIS IS A REQUIRED FIELD it is NOT Optional.\n{parameters[19].name} is REQUIRED when EventCode is selected")
+            parameters[20].setWarningMessage(f"THIS IS A REQUIRED FIELD it is NOT Optional.\n{parameters[20].name} is REQUIRED when EventCode is selected")
+            parameters[21].setWarningMessage(f"THIS IS A REQUIRED FIELD it is NOT Optional.\n{parameters[21].name} is REQUIRED when EventCode is selected")
         return
     
 
